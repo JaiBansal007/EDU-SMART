@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaArrowLeft, FaBriefcase, FaChartLine, FaGraduationCap, FaLightbulb } from 'react-icons/fa';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface CareerPath {
   id: string;
@@ -49,8 +50,8 @@ const careerPaths: CareerPath[] = [
 ];
 
 const CareerPathPage = () => {
+  const router = useRouter();
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
-  const [showAssessment, setShowAssessment] = useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-4">
@@ -81,95 +82,72 @@ const CareerPathPage = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setShowAssessment(!showAssessment)}
+                onClick={() => router.push('/career/assessment')}
                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
               >
                 Take Career Assessment
               </motion.button>
             </div>
 
-            {showAssessment && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mb-6 p-4 bg-gray-50 rounded-lg"
-              >
-                <h3 className="text-lg font-medium text-gray-800 mb-4">
-                  Career Assessment
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Answer a few questions to get personalized career recommendations.
-                </p>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full p-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                >
-                  Start Assessment
-                </motion.button>
-              </motion.div>
-            )}
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {careerPaths.map((path) => (
-                <motion.div
-                  key={path.id}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setSelectedPath(path.id)}
-                  className={`p-6 rounded-lg cursor-pointer transition-colors ${
-                    selectedPath === path.id
-                      ? 'bg-blue-50 border-2 border-blue-500'
-                      : 'bg-white border border-gray-200 hover:border-blue-500'
-                  }`}
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 bg-gray-100 rounded-lg">
-                      {path.icon}
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                        {path.title}
-                      </h3>
-                      <p className="text-gray-600 mb-4">
-                        {path.description}
-                      </p>
-                      <div className="space-y-2">
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-700">Key Skills:</h4>
-                          <div className="flex flex-wrap gap-2 mt-1">
-                            {path.skills.map((skill) => (
-                              <span
-                                key={skill}
-                                className="px-2 py-1 bg-gray-100 text-gray-600 text-sm rounded"
-                              >
-                                {skill}
-                              </span>
-                            ))}
+                <Link href={`/career/${path.id}`} key={path.id}>
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`p-6 rounded-lg cursor-pointer transition-colors ${
+                      selectedPath === path.id
+                        ? 'bg-blue-50 border-2 border-blue-500'
+                        : 'bg-white border border-gray-200 hover:border-blue-500'
+                    }`}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="p-3 bg-gray-100 rounded-lg">
+                        {path.icon}
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                          {path.title}
+                        </h3>
+                        <p className="text-gray-600 mb-4">
+                          {path.description}
+                        </p>
+                        <div className="space-y-2">
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-700">Key Skills:</h4>
+                            <div className="flex flex-wrap gap-2 mt-1">
+                              {path.skills.map((skill) => (
+                                <span
+                                  key={skill}
+                                  className="px-2 py-1 bg-gray-100 text-gray-600 text-sm rounded"
+                                >
+                                  {skill}
+                                </span>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-700">Education:</h4>
-                          <div className="flex flex-wrap gap-2 mt-1">
-                            {path.education.map((edu) => (
-                              <span
-                                key={edu}
-                                className="px-2 py-1 bg-gray-100 text-gray-600 text-sm rounded"
-                              >
-                                {edu}
-                              </span>
-                            ))}
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-700">Education:</h4>
+                            <div className="flex flex-wrap gap-2 mt-1">
+                              {path.education.map((edu) => (
+                                <span
+                                  key={edu}
+                                  className="px-2 py-1 bg-gray-100 text-gray-600 text-sm rounded"
+                                >
+                                  {edu}
+                                </span>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex justify-between text-sm text-gray-600">
-                          <span>Salary: {path.salary}</span>
-                          <span>Growth: {path.growth}</span>
+                          <div className="flex justify-between text-sm text-gray-600">
+                            <span>Salary: {path.salary}</span>
+                            <span>Growth: {path.growth}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </motion.div>
+                  </motion.div>
+                </Link>
               ))}
             </div>
           </div>
