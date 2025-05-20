@@ -1,6 +1,7 @@
 'use client';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface Card {
   id: number;
@@ -10,6 +11,7 @@ interface Card {
 }
 
 const PuzzleGame = () => {
+  const { t } = useLanguage();
   const [cards, setCards] = useState<Card[]>([]);
   const [selectedCards, setSelectedCards] = useState<Card[]>([]);
   const [score, setScore] = useState(0);
@@ -17,20 +19,20 @@ const PuzzleGame = () => {
 
   const educationalPairs = [
     {
-      term: 'Algorithm',
-      definition: 'A step-by-step procedure for solving a problem or accomplishing a task',
+      term: t('puzzle_term_algorithm'),
+      definition: t('puzzle_def_algorithm'),
     },
     {
-      term: 'Variable',
-      definition: 'A container for storing data values in programming',
+      term: t('puzzle_term_variable'),
+      definition: t('puzzle_def_variable'),
     },
     {
-      term: 'Function',
-      definition: 'A reusable block of code that performs a specific task',
+      term: t('puzzle_term_function'),
+      definition: t('puzzle_def_function'),
     },
     {
-      term: 'Loop',
-      definition: 'A programming structure that repeats a sequence of instructions',
+      term: t('puzzle_term_loop'),
+      definition: t('puzzle_def_loop'),
     },
   ];
 
@@ -92,7 +94,7 @@ const PuzzleGame = () => {
           animate={{ y: 0, opacity: 1 }}
           className="text-3xl font-bold text-center mb-8 text-blue-600"
         >
-          Educational Term Matching Game
+          {t('puzzle_game_title')}
         </motion.h1>
 
         <div className="text-center mb-8">
@@ -101,7 +103,7 @@ const PuzzleGame = () => {
             animate={{ scale: 1 }}
             className="text-2xl font-bold text-purple-600"
           >
-            Score: {score}
+            {t('score')}: {score}
           </motion.div>
         </div>
 
@@ -132,7 +134,7 @@ const PuzzleGame = () => {
             className="mt-8 text-center"
           >
             <h2 className="text-2xl font-bold text-green-600 mb-4">
-              Congratulations! You've completed the game!
+              {t('puzzle_game_complete')}
             </h2>
             <motion.button
               whileHover={{ scale: 1.1 }}
@@ -140,7 +142,7 @@ const PuzzleGame = () => {
               onClick={initializeGame}
               className="bg-blue-600 text-white px-6 py-2 rounded-lg"
             >
-              Play Again
+              {t('play_again')}
             </motion.button>
           </motion.div>
         )}

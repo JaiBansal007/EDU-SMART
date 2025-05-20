@@ -1,6 +1,7 @@
 'use client';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface Question {
   question: string;
@@ -9,6 +10,7 @@ interface Question {
 }
 
 const MathQuizGame = () => {
+  const { t } = useLanguage();
   const [score, setScore] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -74,9 +76,9 @@ const MathQuizGame = () => {
     setSelectedAnswer(answer);
     if (answer === currentQuestion?.answer) {
       setScore(prev => prev + 10);
-      setMessage('Correct! +10 points');
+      setMessage(t('math_quiz_correct'));
     } else {
-      setMessage('Wrong answer! Try again');
+      setMessage(t('math_quiz_wrong'));
     }
 
     setTimeout(() => {
@@ -103,7 +105,7 @@ const MathQuizGame = () => {
           animate={{ y: 0, opacity: 1 }}
           className="text-3xl font-bold text-center mb-8 text-blue-600"
         >
-          Math Quiz Game
+          {t('math_quiz_title')}
         </motion.h1>
 
         <div className="text-center mb-8 space-y-4">
@@ -112,10 +114,10 @@ const MathQuizGame = () => {
             animate={{ scale: 1 }}
             className="text-2xl font-bold text-purple-600"
           >
-            Score: {score}
+            {t('score')}: {score}
           </motion.div>
           <div className="text-xl font-semibold text-blue-600">
-            Time Left: {timeLeft}s
+            {t('time_left')}: {timeLeft}s
           </div>
         </div>
 
@@ -155,21 +157,21 @@ const MathQuizGame = () => {
                 animate={{ opacity: 1 }}
                 className="mt-4 text-center text-lg font-medium"
                 style={{
-                  color: message.includes('Correct') ? '#059669' : '#DC2626',
+                  color: message.includes(t('math_quiz_correct')) ? '#059669' : '#DC2626',
                 }}
               >
                 {message}
               </motion.div>
             )}
           </motion.div>
-        ) : (
+        ) :
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             className="text-center"
           >
             <h2 className="text-2xl font-bold text-blue-600 mb-4">
-              Game Over! Your final score: {score}
+              {t('math_quiz_game_over')} {t('final_score')}: {score}
             </h2>
             <motion.button
               whileHover={{ scale: 1.1 }}
@@ -177,7 +179,7 @@ const MathQuizGame = () => {
               onClick={restartGame}
               className="bg-blue-600 text-white px-6 py-2 rounded-lg"
             >
-              Play Again
+              {t('play_again')}
             </motion.button>
           </motion.div>
         )}

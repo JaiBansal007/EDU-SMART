@@ -2,8 +2,10 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { FaGithub, FaTwitter, FaLinkedin, FaEnvelope } from 'react-icons/fa';
+import { useLanguage } from '../context/LanguageContext';
 
 const Footer = () => {
+  const { t } = useLanguage();
   const currentYear = new Date().getFullYear();
 
   const socialLinks = [
@@ -11,6 +13,20 @@ const Footer = () => {
     { icon: FaTwitter, url: 'https://twitter.com' },
     { icon: FaLinkedin, url: 'https://linkedin.com' },
     { icon: FaEnvelope, url: 'mailto:contact@edusmart.com' },
+  ];
+
+  const quickLinks = [
+    { name: t('courses'), path: '/courses' },
+    { name: t('games'), path: '/games' },
+    { name: t('about'), path: '/about' },
+    { name: t('contact_us'), path: '/contact' },
+  ];
+
+  const resources = [
+    { name: t('blog'), path: '/blog' },
+    { name: t('tutorials'), path: '/tutorials' },
+    { name: t('faq'), path: '/faq' },
+    { name: t('help'), path: '/help' },
   ];
 
   return (
@@ -30,22 +46,22 @@ const Footer = () => {
               EduSmart
             </motion.h3>
             <p className="text-sm">
-              Empowering minds through innovative education and interactive learning experiences.
+              {t('footer_description')}
             </p>
           </div>
 
           {/* Quick Links */}
           <div className="space-y-4">
-            <h3 className="text-xl font-bold">Quick Links</h3>
+            <h3 className="text-xl font-bold">{t('quick_links')}</h3>
             <ul className="space-y-2">
-              {['Courses', 'Puzzle Game', 'About', 'Contact'].map((item) => (
+              {quickLinks.map((item) => (
                 <motion.li
-                  key={item}
+                  key={item.path}
                   whileHover={{ x: 5 }}
                   className="text-sm"
                 >
-                  <Link href={`/${item.toLowerCase().replace(' ', '-')}`}>
-                    {item}
+                  <Link href={item.path}>
+                    {item.name}
                   </Link>
                 </motion.li>
               ))}
@@ -54,15 +70,15 @@ const Footer = () => {
 
           {/* Resources */}
           <div className="space-y-4">
-            <h3 className="text-xl font-bold">Resources</h3>
+            <h3 className="text-xl font-bold">{t('resources')}</h3>
             <ul className="space-y-2">
-              {['Blog', 'Tutorials', 'FAQ', 'Support'].map((item) => (
+              {resources.map((item) => (
                 <motion.li
-                  key={item}
+                  key={item.path}
                   whileHover={{ x: 5 }}
                   className="text-sm"
                 >
-                  <Link href={`/${item.toLowerCase()}`}>{item}</Link>
+                  <Link href={item.path}>{item.name}</Link>
                 </motion.li>
               ))}
             </ul>
@@ -70,7 +86,7 @@ const Footer = () => {
 
           {/* Social Links */}
           <div className="space-y-4">
-            <h3 className="text-xl font-bold">Connect With Us</h3>
+            <h3 className="text-xl font-bold">{t('follow_us')}</h3>
             <div className="flex space-x-4">
               {socialLinks.map((social, index) => (
                 <motion.a
@@ -95,7 +111,7 @@ const Footer = () => {
           transition={{ delay: 0.5 }}
           className="mt-8 pt-8 border-t border-white/20 text-center text-sm"
         >
-          <p>© {currentYear} EduSmart. All rights reserved.</p>
+          <p>© {currentYear} EduSmart. {t('all_rights_reserved')}</p>
         </motion.div>
       </div>
     </motion.footer>
