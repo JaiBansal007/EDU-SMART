@@ -12,9 +12,19 @@ import {
   FaChartBar,
   FaBook,
   FaRocket,
-  FaUserGraduate
+  FaUserGraduate,
+  FaCode,
+  FaRobot,
+  FaLaptopCode,
+  FaBrain,
+  FaSearch,
+  FaFilter,
+  FaStar,
+  FaUserTie
 } from 'react-icons/fa';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useLanguage } from '../context/LanguageContext';
 
 interface CareerPath {
   id: string;
@@ -35,6 +45,7 @@ interface CareerPath {
     remoteWork: string;
     topCompanies: string[];
   };
+  opportunities: string[];
 }
 
 interface AssessmentQuestion {
@@ -44,473 +55,289 @@ interface AssessmentQuestion {
   category: 'interests' | 'skills' | 'personality' | 'workstyle';
 }
 
-const careerPaths: CareerPath[] = [
-  {
-    id: 'software',
-    title: 'Software Development',
-    description: 'Design, develop, and maintain software applications and systems.',
-    skills: ['Programming', 'Problem Solving', 'System Design', 'Team Collaboration', 'Version Control', 'Testing'],
-    education: ['Computer Science', 'Software Engineering', 'Information Technology'],
-    salary: '$80,000 - $150,000',
-    growth: 'High',
-    icon: <FaBriefcase className="text-2xl text-blue-500" />,
-    learningPath: {
-      beginner: ['HTML/CSS', 'JavaScript Basics', 'Git Fundamentals', 'Basic Algorithms'],
-      intermediate: ['React/Node.js', 'Database Design', 'API Development', 'Testing'],
-      advanced: ['System Architecture', 'Cloud Services', 'DevOps', 'Security']
-    },
-    marketTrends: {
-      demand: 'Very High',
-      remoteWork: 'Excellent',
-      topCompanies: ['Google', 'Microsoft', 'Amazon', 'Meta']
-    }
-  },
-  {
-    id: 'data',
-    title: 'Data Science',
-    description: 'Analyze complex data sets to help guide business decisions.',
-    skills: ['Statistics', 'Machine Learning', 'Data Analysis', 'Python/R', 'SQL', 'Data Visualization'],
-    education: ['Data Science', 'Statistics', 'Computer Science'],
-    salary: '$90,000 - $160,000',
-    growth: 'Very High',
-    icon: <FaChartLine className="text-2xl text-purple-500" />,
-    learningPath: {
-      beginner: ['Python Basics', 'Statistics Fundamentals', 'SQL', 'Data Cleaning'],
-      intermediate: ['Machine Learning', 'Data Visualization', 'Big Data Tools', 'A/B Testing'],
-      advanced: ['Deep Learning', 'NLP', 'Computer Vision', 'MLOps']
-    },
-    marketTrends: {
-      demand: 'Extremely High',
-      remoteWork: 'Good',
-      topCompanies: ['IBM', 'Amazon', 'Microsoft', 'Google']
-    }
-  },
-  {
-    id: 'ai',
-    title: 'Artificial Intelligence',
-    description: 'Develop AI systems and machine learning models.',
-    skills: ['Machine Learning', 'Deep Learning', 'Python', 'Mathematics', 'Neural Networks', 'Research'],
-    education: ['Computer Science', 'AI/ML', 'Mathematics'],
-    salary: '$100,000 - $180,000',
-    growth: 'Very High',
-    icon: <FaLightbulb className="text-2xl text-yellow-500" />,
-    learningPath: {
-      beginner: ['Python', 'Linear Algebra', 'Basic ML', 'Probability'],
-      intermediate: ['Deep Learning', 'NLP', 'Computer Vision', 'Reinforcement Learning'],
-      advanced: ['Advanced ML', 'Research Methods', 'AI Ethics', 'Model Deployment']
-    },
-    marketTrends: {
-      demand: 'Extremely High',
-      remoteWork: 'Good',
-      topCompanies: ['OpenAI', 'DeepMind', 'Google', 'Microsoft']
-    }
-  },
-];
-
-const assessmentQuestions: AssessmentQuestion[] = [
-  {
-    id: 1,
-    question: "What type of work environment do you prefer?",
-    options: ["Team-based collaboration", "Independent work", "Mix of both", "Leadership role"],
-    category: "workstyle"
-  },
-  {
-    id: 2,
-    question: "Which of these activities interests you the most?",
-    options: ["Building applications", "Analyzing data", "Solving complex problems", "Research and innovation"],
-    category: "interests"
-  },
-  {
-    id: 3,
-    question: "How do you feel about learning new technologies?",
-    options: ["Very excited", "Interested", "Neutral", "Prefer stability"],
-    category: "personality"
-  },
-  {
-    id: 4,
-    question: "What's your preferred way of solving problems?",
-    options: ["Logical analysis", "Creative thinking", "Data-driven approach", "Collaborative brainstorming"],
-    category: "skills"
-  }
-];
-
-const CareerPathPage = () => {
+const CareerPage = () => {
+  const { t } = useLanguage();
+  const router = useRouter();
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
-  const [showAssessment, setShowAssessment] = useState(false);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, string>>({});
-  const [showResults, setShowResults] = useState(false);
-  const [selectedTab, setSelectedTab] = useState<'overview' | 'learning' | 'market'>('overview');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const handleAnswer = (answer: string) => {
-    setAnswers({ ...answers, [currentQuestion]: answer });
-    if (currentQuestion < assessmentQuestions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-    } else {
-      setShowResults(true);
+  const careerPaths: CareerPath[] = [
+    {
+      id: 'tech',
+      title: t('tech_career'),
+      icon: <FaCode className="text-4xl text-blue-500" />,
+      description: t('tech_career_desc'),
+      skills: ['Programming', 'Problem Solving', 'System Design', 'Cloud Computing'],
+      education: ['Computer Science', 'Software Engineering', 'Information Technology'],
+      salary: '$80,000 - $150,000',
+      growth: 'High',
+      learningPath: {
+        beginner: ['HTML/CSS', 'JavaScript Basics', 'Git Fundamentals', 'Basic Algorithms'],
+        intermediate: ['React/Node.js', 'Database Design', 'API Development', 'Testing'],
+        advanced: ['System Architecture', 'Cloud Services', 'DevOps', 'Security']
+      },
+      marketTrends: {
+        demand: 'Very High',
+        remoteWork: 'Excellent',
+        topCompanies: ['Google', 'Microsoft', 'Amazon', 'Meta']
+      },
+      opportunities: ['Software Engineer', 'Data Scientist', 'DevOps Engineer', 'AI Engineer']
+    },
+    {
+      id: 'business',
+      title: t('business_career'),
+      icon: <FaChartLine className="text-4xl text-green-500" />,
+      description: t('business_career_desc'),
+      skills: ['Leadership', 'Strategic Planning', 'Financial Analysis', 'Marketing'],
+      education: ['Business Administration', 'Economics', 'Marketing'],
+      salary: '$70,000 - $120,000',
+      growth: 'Moderate',
+      learningPath: {
+        beginner: ['Marketing Fundamentals', 'Financial Accounting', 'Business Law', 'Entrepreneurship'],
+        intermediate: ['Strategic Management', 'International Business', 'Digital Marketing', 'Financial Modeling'],
+        advanced: ['Leadership Development', 'Business Strategy', 'Corporate Finance', 'Global Business']
+      },
+      marketTrends: {
+        demand: 'Moderate',
+        remoteWork: 'Good',
+        topCompanies: ['Apple', 'IBM', 'Microsoft', 'Walmart']
+      },
+      opportunities: ['Business Analyst', 'Project Manager', 'Marketing Manager', 'Entrepreneur']
+    },
+    {
+      id: 'ai',
+      title: t('ai_career'),
+      icon: <FaRobot className="text-4xl text-purple-500" />,
+      description: t('ai_career_desc'),
+      skills: ['Machine Learning', 'Deep Learning', 'NLP', 'Computer Vision'],
+      education: ['Computer Science', 'AI/ML', 'Mathematics'],
+      salary: '$100,000 - $180,000',
+      growth: 'Very High',
+      learningPath: {
+        beginner: ['Python', 'Linear Algebra', 'Basic ML', 'Probability'],
+        intermediate: ['Deep Learning', 'NLP', 'Computer Vision', 'Reinforcement Learning'],
+        advanced: ['Advanced ML', 'Research Methods', 'AI Ethics', 'Model Deployment']
+      },
+      marketTrends: {
+        demand: 'Extremely High',
+        remoteWork: 'Good',
+        topCompanies: ['OpenAI', 'DeepMind', 'Google', 'Microsoft']
+      },
+      opportunities: ['AI Researcher', 'ML Engineer', 'Data Scientist', 'AI Product Manager']
     }
-  };
+  ];
 
-  const getRecommendedPaths = () => {
-    // Simple scoring system based on answers
-    const scores = careerPaths.map(path => ({
-      id: path.id,
-      score: 0
-    }));
+  const assessmentQuestions: AssessmentQuestion[] = [
+    {
+      id: 1,
+      question: "What type of work environment do you prefer?",
+      options: ["Team-based collaboration", "Independent work", "Mix of both", "Leadership role"],
+      category: "workstyle"
+    },
+    {
+      id: 2,
+      question: "Which of these activities interests you the most?",
+      options: ["Building applications", "Analyzing data", "Solving complex problems", "Research and innovation"],
+      category: "interests"
+    },
+    {
+      id: 3,
+      question: "How do you feel about learning new technologies?",
+      options: ["Very excited", "Interested", "Neutral", "Prefer stability"],
+      category: "personality"
+    },
+    {
+      id: 4,
+      question: "What's your preferred way of solving problems?",
+      options: ["Logical analysis", "Creative thinking", "Data-driven approach", "Collaborative brainstorming"],
+      category: "skills"
+    }
+  ];
 
-    // Add scoring logic based on answers
-    Object.entries(answers).forEach(([questionId, answer]) => {
-      const question = assessmentQuestions[parseInt(questionId)];
-      // Add scoring logic here based on question category and answer
-    });
-
-    return scores.sort((a, b) => b.score - a.score).map(s => s.id);
-  };
+  const skillAssessments = [
+    {
+      title: t('coding_assessment'),
+      icon: <FaLaptopCode className="text-3xl text-blue-500" />,
+      description: t('coding_assessment_desc'),
+      duration: '45 min'
+    },
+    {
+      title: t('problem_solving'),
+      icon: <FaBrain className="text-3xl text-purple-500" />,
+      description: t('problem_solving_desc'),
+      duration: '30 min'
+    },
+    {
+      title: t('leadership'),
+      icon: <FaUserTie className="text-3xl text-green-500" />,
+      description: t('leadership_desc'),
+      duration: '60 min'
+    }
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 py-12 px-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <Link href="/">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white transition-colors"
-            >
-              <FaArrowLeft />
-              Back to Home
-            </motion.button>
-          </Link>
-          <div className="flex items-center gap-2">
-            <FaGraduationCap className="text-2xl text-blue-500" />
-            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Career Path Agent</h1>
-          </div>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+      {/* Hero Section */}
+      <section className="relative py-20 px-4">
+        <div className="container mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-12"
+          >
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white mb-6">
+              {t('career_development')}
+            </h1>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              {t('career_development_desc')}
+            </p>
+          </motion.div>
 
-        <div className="space-y-8">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
-                Explore Career Paths
-              </h2>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setShowAssessment(!showAssessment)}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          {/* Search Bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="max-w-2xl mx-auto mb-12"
+          >
+            <div className="relative">
+              <input
+                type="text"
+                placeholder={t('search_careers')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-6 py-4 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <FaSearch className="absolute right-6 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Career Paths */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto">
+          <h2 className="text-3xl font-bold text-center text-gray-800 dark:text-white mb-12">
+            {t('explore_careers')}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {careerPaths.map((path, index) => (
+              <motion.div
+                key={path.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className={`bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer ${
+                  selectedPath === path.id ? 'ring-2 ring-blue-500' : ''
+                }`}
+                onClick={() => setSelectedPath(path.id)}
               >
-                Take Career Assessment
-              </motion.button>
-            </div>
-
-            <AnimatePresence>
-              {showAssessment && !showResults && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="mb-6 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                >
-                  <div className="mb-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <h3 className="text-lg font-medium text-gray-800 dark:text-white">
-                        Question {currentQuestion + 1} of {assessmentQuestions.length}
-                      </h3>
-                      <div className="w-32 h-2 bg-gray-200 dark:bg-gray-600 rounded-full">
-                        <div
-                          className="h-full bg-blue-500 rounded-full transition-all"
-                          style={{ width: `${((currentQuestion + 1) / assessmentQuestions.length) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                    <p className="text-xl text-gray-800 dark:text-white mb-4">
-                      {assessmentQuestions[currentQuestion].question}
-                    </p>
-                    <div className="space-y-3">
-                      {assessmentQuestions[currentQuestion].options.map((option, index) => (
-                        <motion.button
-                          key={index}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => handleAnswer(option)}
-                          className="w-full p-4 bg-white dark:bg-gray-800 text-left rounded-lg border border-gray-200 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 transition-colors text-gray-800 dark:text-white"
-                        >
-                          {option}
-                        </motion.button>
-                      ))}
-                    </div>
+                <div className="mb-4">{path.icon}</div>
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">
+                  {path.title}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  {path.description}
+                </p>
+                <div className="space-y-2">
+                  <h4 className="font-medium text-gray-700 dark:text-gray-200">
+                    {t('key_skills')}:
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {path.skills.map((skill, i) => (
+                      <span
+                        key={i}
+                        className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full text-sm"
+                      >
+                        {skill}
+                      </span>
+                    ))}
                   </div>
-                </motion.div>
-              )}
-
-              {showResults && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="mb-6 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                >
-                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
-                    Your Career Matches
-                  </h3>
-                  <div className="space-y-4">
-                    {getRecommendedPaths().map((pathId, index) => {
-                      const path = careerPaths.find(p => p.id === pathId);
-                      if (!path) return null;
-                      return (
-                        <motion.div
-                          key={pathId}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                          className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600"
-                        >
-                          <div className="flex items-center gap-4">
-                            {path.icon}
-                            <div>
-                              <h4 className="text-lg font-medium text-gray-800 dark:text-white">{path.title}</h4>
-                              <p className="text-gray-600 dark:text-gray-300">{path.description}</p>
-                            </div>
-                          </div>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {careerPaths.map((path) => (
-                <motion.div
-                  key={path.id}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setSelectedPath(path.id)}
-                  className={`p-6 rounded-lg cursor-pointer transition-colors ${
-                    selectedPath === path.id
-                      ? 'bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-500 dark:border-blue-400'
-                      : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400'
-                  }`}
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                      {path.icon}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
-                        {path.title}
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-300 mb-4">
-                        {path.description}
-                      </p>
-                      <div className="space-y-3">
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Key Skills:</h4>
-                          <div className="flex flex-wrap gap-2">
-                            {path.skills.map((skill) => (
-                              <span
-                                key={skill}
-                                className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-sm rounded"
-                              >
-                                {skill}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                          <span>Salary: {path.salary}</span>
-                          <span>Growth: {path.growth}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                </div>
+              </motion.div>
+            ))}
           </div>
-
-          {selectedPath && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg"
-            >
-              <div className="flex gap-4 mb-6">
-                <button
-                  onClick={() => setSelectedTab('overview')}
-                  className={`px-4 py-2 rounded-lg transition-colors ${
-                    selectedTab === 'overview'
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  Overview
-                </button>
-                <button
-                  onClick={() => setSelectedTab('learning')}
-                  className={`px-4 py-2 rounded-lg transition-colors ${
-                    selectedTab === 'learning'
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  Learning Path
-                </button>
-                <button
-                  onClick={() => setSelectedTab('market')}
-                  className={`px-4 py-2 rounded-lg transition-colors ${
-                    selectedTab === 'market'
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  Market Insights
-                </button>
-              </div>
-
-              <AnimatePresence mode="wait">
-                {selectedTab === 'overview' && (
-                  <motion.div
-                    key="overview"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="space-y-6"
-                  >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="p-6 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Required Education</h3>
-                        <ul className="space-y-2">
-                          {careerPaths.find(p => p.id === selectedPath)?.education.map((edu) => (
-                            <li key={edu} className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-                              <FaCheck className="text-green-500" />
-                              {edu}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="p-6 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Key Skills</h3>
-                        <div className="flex flex-wrap gap-2">
-                          {careerPaths.find(p => p.id === selectedPath)?.skills.map((skill) => (
-                            <span
-                              key={skill}
-                              className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-sm"
-                            >
-                              {skill}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {selectedTab === 'learning' && (
-                  <motion.div
-                    key="learning"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="space-y-6"
-                  >
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="p-6 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-                          <FaUserGraduate className="text-blue-500" />
-                          Beginner Level
-                        </h3>
-                        <ul className="space-y-2">
-                          {careerPaths.find(p => p.id === selectedPath)?.learningPath.beginner.map((skill) => (
-                            <li key={skill} className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-                              <FaCheck className="text-green-500" />
-                              {skill}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="p-6 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-                          <FaBook className="text-blue-500" />
-                          Intermediate Level
-                        </h3>
-                        <ul className="space-y-2">
-                          {careerPaths.find(p => p.id === selectedPath)?.learningPath.intermediate.map((skill) => (
-                            <li key={skill} className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-                              <FaCheck className="text-green-500" />
-                              {skill}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="p-6 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-                          <FaRocket className="text-blue-500" />
-                          Advanced Level
-                        </h3>
-                        <ul className="space-y-2">
-                          {careerPaths.find(p => p.id === selectedPath)?.learningPath.advanced.map((skill) => (
-                            <li key={skill} className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-                              <FaCheck className="text-green-500" />
-                              {skill}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {selectedTab === 'market' && (
-                  <motion.div
-                    key="market"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="space-y-6"
-                  >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="p-6 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-                          <FaChartBar className="text-blue-500" />
-                          Market Trends
-                        </h3>
-                        <div className="space-y-4">
-                          <div>
-                            <p className="text-gray-600 dark:text-gray-300">Demand: <span className="font-medium text-gray-800 dark:text-white">
-                              {careerPaths.find(p => p.id === selectedPath)?.marketTrends.demand}
-                            </span></p>
-                          </div>
-                          <div>
-                            <p className="text-gray-600 dark:text-gray-300">Remote Work Opportunities: <span className="font-medium text-gray-800 dark:text-white">
-                              {careerPaths.find(p => p.id === selectedPath)?.marketTrends.remoteWork}
-                            </span></p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="p-6 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Top Companies</h3>
-                        <div className="flex flex-wrap gap-2">
-                          {careerPaths.find(p => p.id === selectedPath)?.marketTrends.topCompanies.map((company) => (
-                            <span
-                              key={company}
-                              className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-sm"
-                            >
-                              {company}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          )}
         </div>
-      </div>
+      </section>
+
+      {/* Skill Assessments */}
+      <section className="py-16 px-4 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900">
+        <div className="container mx-auto">
+          <h2 className="text-3xl font-bold text-center text-gray-800 dark:text-white mb-12">
+            {t('skill_assessments')}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {skillAssessments.map((assessment, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-all"
+              >
+                <div className="mb-4">{assessment.icon}</div>
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">
+                  {assessment.title}
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  {assessment.description}
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {t('duration')}: {assessment.duration}
+                  </span>
+                  <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                    {t('start_assessment')}
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Career Tips */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto">
+          <h2 className="text-3xl font-bold text-center text-gray-800 dark:text-white mb-12">
+            {t('career_tips')}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg"
+            >
+              <div className="flex items-center gap-4 mb-4">
+                <FaLightbulb className="text-3xl text-yellow-500" />
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white">
+                  {t('continuous_learning')}
+                </h3>
+              </div>
+              <p className="text-gray-600 dark:text-gray-300">
+                {t('continuous_learning_desc')}
+              </p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg"
+            >
+              <div className="flex items-center gap-4 mb-4">
+                <FaBriefcase className="text-3xl text-blue-500" />
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white">
+                  {t('networking')}
+                </h3>
+              </div>
+              <p className="text-gray-600 dark:text-gray-300">
+                {t('networking_desc')}
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
 
-export default CareerPathPage; 
+export default CareerPage; 

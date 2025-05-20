@@ -5,7 +5,7 @@ import { FaCube, FaHeart, FaSun, FaBone } from 'react-icons/fa';
 import { useLanguage } from '../context/LanguageContext';
 import ThreeDVisualization from './3DVisualization';
 
-type ModelType = 'heart' | 'solar' | 'skeleton';
+type ModelType = 'dna' | 'brain' | 'cell';
 
 interface ModelOption {
   type: ModelType;
@@ -15,24 +15,24 @@ interface ModelOption {
 
 export default function ModelShowcase() {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<ModelType>('solar');
+  const [selectedModel, setSelectedModel] = useState<ModelType>('dna');
   const { t } = useLanguage();
 
   const models: ModelOption[] = [
     {
-      type: 'heart',
+      type: 'dna',
+      icon: <FaCube className="text-blue-500" />,
+      label: t('dna_model'),
+    },
+    {
+      type: 'brain',
       icon: <FaHeart className="text-red-500" />,
-      label: t('human_heart'),
+      label: t('brain_model'),
     },
     {
-      type: 'solar',
-      icon: <FaSun className="text-yellow-500" />,
-      label: t('solar_system'),
-    },
-    {
-      type: 'skeleton',
-      icon: <FaBone className="text-gray-500" />,
-      label: t('human_skeleton'),
+      type: 'cell',
+      icon: <FaSun className="text-green-500" />,
+      label: t('cell_model'),
     },
   ];
 

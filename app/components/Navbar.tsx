@@ -11,6 +11,7 @@ import {
   FaSun
 } from 'react-icons/fa';
 import NotificationDropdown from './NotificationDropdown';
+import LanguageSelector from './LanguageSelector';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -66,6 +67,8 @@ const Navbar = () => {
 
           {/* Right Side Actions */}
           <div className="flex items-center space-x-4">
+            <LanguageSelector />
+            
             <button
               onClick={toggleTheme}
               className="p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-800 transition-all"

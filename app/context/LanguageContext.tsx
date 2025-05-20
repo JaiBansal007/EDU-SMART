@@ -239,6 +239,37 @@ const translations = {
     'personalized_assistant_desc': 'Your AI companion that adapts to your learning style and helps you achieve your goals.',
     'career_path_desc': 'Discover your ideal career path with personalized guidance and skill recommendations.',
     'multilingual_support_desc': 'Learn in your preferred language with support for multiple languages.',
+
+    // Career Page
+    career_development: 'Career Development',
+    career_development_desc: 'Explore career paths, take skill assessments, and discover opportunities that match your interests and skills.',
+    search_careers: 'Search careers...',
+    explore_careers: 'Explore Career Paths',
+    key_skills: 'Key Skills',
+    skill_assessments: 'Skill Assessments',
+    duration: 'Duration',
+    start_assessment: 'Start Assessment',
+    career_tips: 'Career Tips',
+    continuous_learning: 'Continuous Learning',
+    continuous_learning_desc: 'Stay updated with industry trends and continuously develop new skills to advance your career.',
+    networking: 'Networking',
+    networking_desc: 'Build professional relationships and expand your network to discover new opportunities.',
+
+    // Career Paths
+    tech_career: 'Technology',
+    tech_career_desc: 'Build and innovate with cutting-edge technologies in software development, data science, and more.',
+    business_career: 'Business',
+    business_career_desc: 'Lead organizations, drive growth, and make strategic decisions in the business world.',
+    ai_career: 'Artificial Intelligence',
+    ai_career_desc: 'Shape the future with AI and machine learning technologies.',
+
+    // Skill Assessments
+    coding_assessment: 'Coding Skills',
+    coding_assessment_desc: 'Test your programming knowledge and problem-solving abilities.',
+    problem_solving: 'Problem Solving',
+    problem_solving_desc: 'Evaluate your analytical thinking and solution-finding capabilities.',
+    leadership: 'Leadership',
+    leadership_desc: 'Assess your leadership potential and management skills.',
   },
   es: {
     // Common
@@ -461,6 +492,37 @@ const translations = {
     'personalized_assistant_desc': 'Tu compañero de IA que se adapta a tu estilo de aprendizaje y te ayuda a alcanzar tus objetivos.',
     'career_path_desc': 'Descubre tu trayectoria profesional ideal con orientación personalizada y recomendaciones de habilidades.',
     'multilingual_support_desc': 'Aprende en tu idioma preferido con soporte para múltiples idiomas.',
+
+    // Career Page
+    career_development: 'Desarrollo Profesional',
+    career_development_desc: 'Explora carreras, realiza evaluaciones de habilidades y descubre oportunidades que coincidan con tus intereses y habilidades.',
+    search_careers: 'Buscar carreras...',
+    explore_careers: 'Explorar Carreras',
+    key_skills: 'Habilidades Clave',
+    skill_assessments: 'Evaluaciones de Habilidades',
+    duration: 'Duración',
+    start_assessment: 'Comenzar Evaluación',
+    career_tips: 'Consejos Profesionales',
+    continuous_learning: 'Aprendizaje Continuo',
+    continuous_learning_desc: 'Mantente actualizado con las tendencias de la industria y desarrolla continuamente nuevas habilidades para avanzar en tu carrera.',
+    networking: 'Networking',
+    networking_desc: 'Construye relaciones profesionales y expande tu red para descubrir nuevas oportunidades.',
+
+    // Career Paths
+    tech_career: 'Tecnología',
+    tech_career_desc: 'Construye e innova con tecnologías de vanguardia en desarrollo de software, ciencia de datos y más.',
+    business_career: 'Negocios',
+    business_career_desc: 'Lidera organizaciones, impulsa el crecimiento y toma decisiones estratégicas en el mundo empresarial.',
+    ai_career: 'Inteligencia Artificial',
+    ai_career_desc: 'Da forma al futuro con tecnologías de IA y aprendizaje automático.',
+
+    // Skill Assessments
+    coding_assessment: 'Habilidades de Programación',
+    coding_assessment_desc: 'Evalúa tus conocimientos de programación y habilidades de resolución de problemas.',
+    problem_solving: 'Resolución de Problemas',
+    problem_solving_desc: 'Evalúa tu pensamiento analítico y capacidades para encontrar soluciones.',
+    leadership: 'Liderazgo',
+    leadership_desc: 'Evalúa tu potencial de liderazgo y habilidades de gestión.',
   },
   // Add more languages as needed...
 };
