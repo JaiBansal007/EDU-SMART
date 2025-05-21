@@ -1,4 +1,8 @@
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextResponse } from 'next/server';
+
+// Initialize Gemini API
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export async function POST(request: Request) {
   try {
@@ -11,45 +15,25 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check for API key
-    const apiKey = process.env.GOOGLE_TRANSLATE_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: 'Translation API key not configured' },
-        { status: 500 }
-      );
-    }
+    // Get the Gemini Pro model
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
-    // Call Google Cloud Translation API
-    const response = await fetch(
-      `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          q: text,
-          source: sourceLanguage,
-          target: targetLanguage,
-          format: 'text',
-        }),
-      }
-    );
+    // Create the prompt for translation
+    const prompt = `Translate the following text from ${sourceLanguage} to ${targetLanguage}. 
+    Maintain the original meaning, tone, and context. 
+    If the text contains any technical terms or proper nouns, keep them as is.
+    Text to translate: "${text}"`;
 
-    const data = await response.json();
+    // Generate translation
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const translatedText = response.text();
 
-    if (!response.ok) {
-      throw new Error(data.error?.message || 'Translation failed');
-    }
-
-    return NextResponse.json({
-      translatedText: data.data.translations[0].translatedText,
-    });
+    return NextResponse.json({ translatedText });
   } catch (error) {
     console.error('Translation error:', error);
     return NextResponse.json(
-      { error: 'Translation failed' },
+      { error: 'Failed to translate text' },
       { status: 500 }
     );
   }

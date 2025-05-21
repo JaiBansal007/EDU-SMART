@@ -1,7 +1,7 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { motion } from 'framer-motion';
 
 type ModelType = 'dna' | 'brain' | 'cell';
@@ -10,6 +10,8 @@ interface ModelConfig {
   scale: number;
   position: [number, number, number];
   rotation: [number, number, number];
+  animationSpeed: number;
+  hoverAnimationSpeed: number;
 }
 
 const modelConfigs: Record<ModelType, ModelConfig> = {
@@ -17,16 +19,22 @@ const modelConfigs: Record<ModelType, ModelConfig> = {
     scale: 2,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
+    animationSpeed: 0.005,
+    hoverAnimationSpeed: 0.02,
   },
   brain: {
     scale: 2,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
+    animationSpeed: 0.003,
+    hoverAnimationSpeed: 0.015,
   },
   cell: {
     scale: 2,
     position: [0, 0, 0],
     rotation: [0, 0, 0],
+    animationSpeed: 0.004,
+    hoverAnimationSpeed: 0.018,
   },
 };
 
@@ -35,9 +43,74 @@ export default function ThreeDVisualization({ modelType = 'dna' }: { modelType?:
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isHovered, setIsHovered] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Memoize materials to prevent unnecessary recreations
+  const materials = useMemo(() => ({
+    dna: {
+      backbone: new THREE.MeshPhongMaterial({
+        color: 0x4444ff,
+        shininess: 100,
+        specular: 0x444444,
+        emissive: 0x2222ff,
+        emissiveIntensity: 0.2,
+      }),
+      base: (index: number) => new THREE.MeshPhongMaterial({
+        color: index % 2 === 0 ? 0xff4444 : 0x44ff44,
+        shininess: 100,
+        specular: 0x444444,
+        emissive: index % 2 === 0 ? 0xff0000 : 0x00ff00,
+        emissiveIntensity: 0.2,
+      }),
+    },
+    brain: {
+      main: new THREE.MeshPhongMaterial({
+        color: 0xffcccc,
+        shininess: 30,
+        specular: 0x444444,
+        emissive: 0x442222,
+        emissiveIntensity: 0.2,
+      }),
+      sulcus: new THREE.MeshPhongMaterial({
+        color: 0xcc9999,
+        shininess: 30,
+        specular: 0x444444,
+      }),
+    },
+    cell: {
+      membrane: new THREE.MeshPhongMaterial({
+        color: 0x88cc88,
+        transparent: true,
+        opacity: 0.3,
+        shininess: 100,
+        specular: 0x444444,
+      }),
+      nucleus: new THREE.MeshPhongMaterial({
+        color: 0x4444ff,
+        shininess: 100,
+        specular: 0x444444,
+        emissive: 0x2222ff,
+        emissiveIntensity: 0.2,
+      }),
+      chloroplast: new THREE.MeshPhongMaterial({
+        color: 0x44ff44,
+        shininess: 100,
+        specular: 0x444444,
+        emissive: 0x22ff22,
+        emissiveIntensity: 0.2,
+      }),
+      vacuole: new THREE.MeshPhongMaterial({
+        color: 0x88aaff,
+        transparent: true,
+        opacity: 0.6,
+        shininess: 100,
+        specular: 0x444444,
+      }),
+    },
+  }), []);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || isInitialized) return;
 
     let scene: THREE.Scene;
     let camera: THREE.PerspectiveCamera;
@@ -45,12 +118,17 @@ export default function ThreeDVisualization({ modelType = 'dna' }: { modelType?:
     let controls: OrbitControls;
     let model: THREE.Object3D;
     let animationFrameId: number;
+    let clock: THREE.Clock;
 
     try {
-      // Scene setup
+      console.log('Initializing 3D scene...');
+      
+      // Scene setup with improved performance
       scene = new THREE.Scene();
       scene.background = new THREE.Color(0xf0f0f0);
+      scene.fog = new THREE.Fog(0xf0f0f0, 10, 50);
 
+      console.log('Setting up camera...');
       camera = new THREE.PerspectiveCamera(
         75,
         containerRef.current.clientWidth / containerRef.current.clientHeight,
@@ -59,24 +137,34 @@ export default function ThreeDVisualization({ modelType = 'dna' }: { modelType?:
       );
       camera.position.z = 5;
 
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      console.log('Creating renderer...');
+      renderer = new THREE.WebGLRenderer({ 
+        antialias: true, 
+        alpha: true,
+        powerPreference: 'high-performance'
+      });
       renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
-      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       containerRef.current.appendChild(renderer.domElement);
 
-      // Enhanced lighting
+      console.log('Setting up lights...');
+      // Enhanced lighting setup
       const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
       scene.add(ambientLight);
 
       const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
       directionalLight.position.set(5, 5, 5);
+      directionalLight.castShadow = true;
       scene.add(directionalLight);
 
       const pointLight = new THREE.PointLight(0xffffff, 0.5);
       pointLight.position.set(-5, 5, 5);
       scene.add(pointLight);
 
-      // Controls with enhanced settings
+      console.log('Setting up controls...');
+      // Improved controls
       controls = new OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
@@ -85,7 +173,13 @@ export default function ThreeDVisualization({ modelType = 'dna' }: { modelType?:
       controls.minDistance = 2;
       controls.maxDistance = 10;
       controls.enablePan = true;
+      controls.autoRotate = !isHovered;
+      controls.autoRotateSpeed = 1.0;
 
+      // Initialize clock for smooth animations
+      clock = new THREE.Clock();
+
+      console.log('Creating model...');
       const createModel = () => {
         const config = modelConfigs[modelType];
         let model: THREE.Object3D;
@@ -110,28 +204,20 @@ export default function ThreeDVisualization({ modelType = 'dna' }: { modelType?:
         
         scene.add(model);
         setLoading(false);
+        setIsInitialized(true);
         return model;
       };
 
       const createDNA = () => {
         const group = new THREE.Group();
         
-        // Create base pairs
         const createBasePair = (index: number) => {
           const baseGroup = new THREE.Group();
           
-          // Create sugar-phosphate backbone
+          // Create sugar-phosphate backbone with improved geometry
           const backboneGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.3, 32);
-          const backboneMaterial = new THREE.MeshPhongMaterial({
-            color: 0x4444ff,
-            shininess: 100,
-            specular: 0x444444,
-            emissive: 0x2222ff,
-            emissiveIntensity: 0.2
-          });
-
-          const leftBackbone = new THREE.Mesh(backboneGeometry, backboneMaterial);
-          const rightBackbone = new THREE.Mesh(backboneGeometry, backboneMaterial);
+          const leftBackbone = new THREE.Mesh(backboneGeometry, materials.dna.backbone);
+          const rightBackbone = new THREE.Mesh(backboneGeometry, materials.dna.backbone);
           
           leftBackbone.position.set(-0.2, 0, 0);
           rightBackbone.position.set(0.2, 0, 0);
@@ -139,18 +225,10 @@ export default function ThreeDVisualization({ modelType = 'dna' }: { modelType?:
           baseGroup.add(leftBackbone);
           baseGroup.add(rightBackbone);
 
-          // Create base pairs (A-T, G-C)
+          // Create base pairs with improved geometry
           const baseGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-          const baseMaterial = new THREE.MeshPhongMaterial({
-            color: index % 2 === 0 ? 0xff4444 : 0x44ff44,
-            shininess: 100,
-            specular: 0x444444,
-            emissive: index % 2 === 0 ? 0xff0000 : 0x00ff00,
-            emissiveIntensity: 0.2
-          });
-
-          const leftBase = new THREE.Mesh(baseGeometry, baseMaterial);
-          const rightBase = new THREE.Mesh(baseGeometry, baseMaterial);
+          const leftBase = new THREE.Mesh(baseGeometry, materials.dna.base(index));
+          const rightBase = new THREE.Mesh(baseGeometry, materials.dna.base(index));
           
           leftBase.position.set(-0.1, 0, 0);
           rightBase.position.set(0.1, 0, 0);
@@ -165,7 +243,7 @@ export default function ThreeDVisualization({ modelType = 'dna' }: { modelType?:
           return baseGroup;
         };
 
-        // Create multiple base pairs
+        // Create multiple base pairs with improved distribution
         for (let i = 0; i < 20; i++) {
           group.add(createBasePair(i));
         }
@@ -176,41 +254,26 @@ export default function ThreeDVisualization({ modelType = 'dna' }: { modelType?:
       const createBrain = () => {
         const group = new THREE.Group();
         
-        // Create brain hemispheres
         const createHemisphere = (side: number) => {
           const hemisphereGroup = new THREE.Group();
           
-          // Main hemisphere
+          // Main hemisphere with improved geometry
           const hemisphereGeometry = new THREE.SphereGeometry(1, 64, 64);
-          const hemisphereMaterial = new THREE.MeshPhongMaterial({
-            color: 0xffcccc,
-            shininess: 30,
-            specular: 0x444444,
-            emissive: 0x442222,
-            emissiveIntensity: 0.2
-          });
-          
-          const hemisphere = new THREE.Mesh(hemisphereGeometry, hemisphereMaterial);
+          const hemisphere = new THREE.Mesh(hemisphereGeometry, materials.brain.main);
           hemisphere.scale.set(1, 1.2, 0.8);
           hemisphere.position.x = side * 0.5;
           hemisphereGroup.add(hemisphere);
 
-          // Add sulci (brain folds)
+          // Add sulci with improved distribution
           const createSulcus = (radius: number, position: [number, number, number]) => {
             const sulcusGeometry = new THREE.TorusGeometry(radius, 0.1, 16, 32, Math.PI);
-            const sulcusMaterial = new THREE.MeshPhongMaterial({
-              color: 0xcc9999,
-              shininess: 30,
-              specular: 0x444444
-            });
-            
-            const sulcus = new THREE.Mesh(sulcusGeometry, sulcusMaterial);
+            const sulcus = new THREE.Mesh(sulcusGeometry, materials.brain.sulcus);
             sulcus.position.set(...position);
             sulcus.rotation.x = Math.PI / 2;
             return sulcus;
           };
 
-          // Add multiple sulci
+          // Add multiple sulci with improved distribution
           for (let i = 0; i < 5; i++) {
             const angle = (i / 5) * Math.PI;
             const radius = 0.8 - i * 0.1;
@@ -223,20 +286,12 @@ export default function ThreeDVisualization({ modelType = 'dna' }: { modelType?:
         };
 
         // Add both hemispheres
-        group.add(createHemisphere(-1)); // Left hemisphere
-        group.add(createHemisphere(1));  // Right hemisphere
+        group.add(createHemisphere(-1));
+        group.add(createHemisphere(1));
 
-        // Add cerebellum
+        // Add cerebellum with improved geometry
         const cerebellumGeometry = new THREE.SphereGeometry(0.6, 32, 32);
-        const cerebellumMaterial = new THREE.MeshPhongMaterial({
-          color: 0xffcccc,
-          shininess: 30,
-          specular: 0x444444,
-          emissive: 0x442222,
-          emissiveIntensity: 0.2
-        });
-        
-        const cerebellum = new THREE.Mesh(cerebellumGeometry, cerebellumMaterial);
+        const cerebellum = new THREE.Mesh(cerebellumGeometry, materials.brain.main);
         cerebellum.position.y = -0.8;
         cerebellum.scale.set(1.2, 0.6, 0.8);
         group.add(cerebellum);
@@ -247,50 +302,25 @@ export default function ThreeDVisualization({ modelType = 'dna' }: { modelType?:
       const createCell = () => {
         const group = new THREE.Group();
         
-        // Cell membrane
+        // Cell membrane with improved geometry
         const membraneGeometry = new THREE.SphereGeometry(1, 64, 64);
-        const membraneMaterial = new THREE.MeshPhongMaterial({
-          color: 0x88cc88,
-          transparent: true,
-          opacity: 0.3,
-          shininess: 100,
-          specular: 0x444444
-        });
-        
-        const membrane = new THREE.Mesh(membraneGeometry, membraneMaterial);
+        const membrane = new THREE.Mesh(membraneGeometry, materials.cell.membrane);
         group.add(membrane);
 
-        // Nucleus
+        // Nucleus with improved geometry
         const nucleusGeometry = new THREE.SphereGeometry(0.4, 32, 32);
-        const nucleusMaterial = new THREE.MeshPhongMaterial({
-          color: 0x4444ff,
-          shininess: 100,
-          specular: 0x444444,
-          emissive: 0x2222ff,
-          emissiveIntensity: 0.2
-        });
-        
-        const nucleus = new THREE.Mesh(nucleusGeometry, nucleusMaterial);
+        const nucleus = new THREE.Mesh(nucleusGeometry, materials.cell.nucleus);
         nucleus.position.set(0.2, 0.2, 0);
         group.add(nucleus);
 
-        // Chloroplasts
+        // Chloroplasts with improved distribution
         const createChloroplast = (position: [number, number, number]) => {
           const chloroplastGeometry = new THREE.SphereGeometry(0.15, 32, 32);
-          const chloroplastMaterial = new THREE.MeshPhongMaterial({
-            color: 0x44ff44,
-            shininess: 100,
-            specular: 0x444444,
-            emissive: 0x22ff22,
-            emissiveIntensity: 0.2
-          });
-          
-          const chloroplast = new THREE.Mesh(chloroplastGeometry, chloroplastMaterial);
+          const chloroplast = new THREE.Mesh(chloroplastGeometry, materials.cell.chloroplast);
           chloroplast.position.set(...position);
           return chloroplast;
         };
 
-        // Add multiple chloroplasts
         const chloroplastPositions: [number, number, number][] = [
           [-0.5, 0.3, 0.4],
           [0.3, -0.4, 0.5],
@@ -302,17 +332,9 @@ export default function ThreeDVisualization({ modelType = 'dna' }: { modelType?:
           group.add(createChloroplast(pos));
         });
 
-        // Vacuole
+        // Vacuole with improved geometry
         const vacuoleGeometry = new THREE.SphereGeometry(0.3, 32, 32);
-        const vacuoleMaterial = new THREE.MeshPhongMaterial({
-          color: 0x88aaff,
-          transparent: true,
-          opacity: 0.6,
-          shininess: 100,
-          specular: 0x444444
-        });
-        
-        const vacuole = new THREE.Mesh(vacuoleGeometry, vacuoleMaterial);
+        const vacuole = new THREE.Mesh(vacuoleGeometry, materials.cell.vacuole);
         vacuole.position.set(-0.3, -0.2, 0.3);
         group.add(vacuole);
 
@@ -320,41 +342,40 @@ export default function ThreeDVisualization({ modelType = 'dna' }: { modelType?:
       };
 
       model = createModel();
+      console.log('Model created successfully');
 
-      // Animation loop with enhanced controls
+      // Enhanced animation loop with improved performance
       const animate = () => {
         animationFrameId = requestAnimationFrame(animate);
         
+        const delta = clock.getDelta();
+        const time = clock.getElapsedTime();
+        
         if (model) {
-          // Base rotation
-          model.rotation.y += isHovered ? 0.02 : 0.005;
+          const config = modelConfigs[modelType];
+          const currentSpeed = isHovered ? config.hoverAnimationSpeed : config.animationSpeed;
           
-          // Model-specific animations
+          // Base rotation
+          model.rotation.y += currentSpeed;
+          
+          // Model-specific animations with improved smoothness
           if (modelType === 'dna') {
-            // DNA unwinding animation
             model.children.forEach((basePair, index) => {
-              const time = Date.now() * 0.001;
               basePair.rotation.z = Math.sin(time + index * 0.2) * 0.3;
               basePair.position.y = index * 0.3 + Math.sin(time * 2 + index * 0.1) * 0.1;
             });
           } else if (modelType === 'brain') {
-            // Brain pulse animation
-            const time = Date.now() * 0.001;
             const pulse = Math.sin(time * 2) * 0.05;
             model.scale.set(1 + pulse, 1 + pulse, 1 + pulse);
             
-            // Subtle movement of sulci
             model.children.forEach((hemisphere, index) => {
               hemisphere.children.forEach((sulcus, i) => {
-                if (i > 0) { // Skip the main hemisphere mesh
+                if (i > 0) {
                   sulcus.rotation.z = Math.sin(time + i * 0.5) * 0.1;
                 }
               });
             });
           } else if (modelType === 'cell') {
-            // Cell organelle movement
-            const time = Date.now() * 0.001;
-            
             // Nucleus movement
             model.children[1].position.x = 0.2 + Math.sin(time) * 0.1;
             model.children[1].position.y = 0.2 + Math.cos(time) * 0.1;
@@ -377,41 +398,62 @@ export default function ThreeDVisualization({ modelType = 'dna' }: { modelType?:
         renderer.render(scene, camera);
       };
 
+      console.log('Starting animation loop...');
       animate();
 
-      // Enhanced resize handler
+      // Improved resize handler with debouncing
+      let resizeTimeout: NodeJS.Timeout;
       const handleResize = () => {
         if (!containerRef.current) return;
         
-        const width = containerRef.current.clientWidth;
-        const height = containerRef.current.clientHeight;
-        
-        camera.aspect = width / height;
-        camera.updateProjectionMatrix();
-        renderer.setSize(width, height);
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          const width = containerRef.current!.clientWidth;
+          const height = containerRef.current!.clientHeight;
+          
+          camera.aspect = width / height;
+          camera.updateProjectionMatrix();
+          renderer.setSize(width, height);
+        }, 250);
       };
 
       window.addEventListener('resize', handleResize);
 
-      // Cleanup
+      // Enhanced cleanup
       return () => {
         window.removeEventListener('resize', handleResize);
+        clearTimeout(resizeTimeout);
+        
         if (containerRef.current && renderer.domElement) {
           containerRef.current.removeChild(renderer.domElement);
         }
+        
         scene.clear();
         renderer.dispose();
         controls.dispose();
+        
         if (animationFrameId) {
           cancelAnimationFrame(animationFrameId);
         }
+        
+        // Dispose of all geometries and materials
+        scene.traverse((object) => {
+          if (object instanceof THREE.Mesh) {
+            object.geometry.dispose();
+            if (Array.isArray(object.material)) {
+              object.material.forEach(material => material.dispose());
+            } else {
+              object.material.dispose();
+            }
+          }
+        });
       };
     } catch (err) {
-      console.error('Error initializing 3D visualization:', err);
+      console.error('Detailed error in 3D visualization:', err);
       setError(err instanceof Error ? err.message : 'Failed to initialize 3D visualization');
       setLoading(false);
     }
-  }, [modelType, isHovered]);
+  }, [modelType, isHovered, materials, isInitialized]);
 
   return (
     <motion.div
@@ -422,17 +464,21 @@ export default function ThreeDVisualization({ modelType = 'dna' }: { modelType?:
       onMouseLeave={() => setIsHovered(false)}
     >
       {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-900/50">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm">
+          <div className="flex flex-col items-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <p className="mt-4 text-white text-sm">Loading 3D Model...</p>
+          </div>
         </div>
       )}
       {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-900/50">
-          <div className="text-red-500 text-center p-4">
-            <p>{error}</p>
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm">
+          <div className="text-red-500 text-center p-4 bg-white/10 rounded-lg backdrop-blur-sm">
+            <p className="text-lg font-semibold mb-2">Error Loading Model</p>
+            <p className="text-sm mb-4">{error}</p>
             <button
               onClick={() => window.location.reload()}
-              className="mt-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
             >
               Retry
             </button>

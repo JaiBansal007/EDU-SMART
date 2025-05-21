@@ -1,9 +1,10 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaArrowLeft, FaCheck, FaChevronRight } from 'react-icons/fa';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useLoading } from '../../../context/LoadingContext';
 
 interface Question {
   id: number;
@@ -114,10 +115,21 @@ const careerPaths = {
 
 const AssessmentPage = () => {
   const router = useRouter();
+  const { startLoading, stopLoading } = useLoading();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<{ [key: number]: number }>({});
   const [showResults, setShowResults] = useState(false);
   const [results, setResults] = useState<AssessmentResult | null>(null);
+
+  useEffect(() => {
+    startLoading();
+    // Simulate loading time for data fetching
+    const timer = setTimeout(() => {
+      stopLoading();
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [startLoading, stopLoading]);
 
   const calculateResults = () => {
     const scores = {

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { motion } from 'framer-motion';
 import { FaArrowLeft, FaBriefcase, FaChartLine, FaGraduationCap, FaLightbulb } from 'react-icons/fa';
 import Link from 'next/link';
@@ -17,6 +17,8 @@ import {
   RadialLinearScale,
 } from 'chart.js';
 import { Line, Bar, Radar, Doughnut } from 'react-chartjs-2';
+import Loader from '@/app/components/Loader';
+import { useLoading } from '@/app/context/LoadingContext';
 
 ChartJS.register(
   CategoryScale,
@@ -99,8 +101,20 @@ const careerData: Record<string, CareerData> = {
   },
 };
 
-const CareerDetailPage = ({ params }: { params: { id: string } }) => {
-  const career = careerData[params.id];
+const CareerDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
+  const { startLoading, stopLoading } = useLoading();
+  const resolvedParams = use(params);
+  const career = careerData[resolvedParams.id];
+
+  useEffect(() => {
+    startLoading();
+    // Simulate loading time for data fetching
+    const timer = setTimeout(() => {
+      stopLoading();
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [startLoading, stopLoading]);
 
   if (!career) {
     return <div>Career not found</div>;

@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { 
@@ -25,12 +25,16 @@ import {
 import { useLanguage } from './context/LanguageContext';
 import ThreeDVisualization from './components/3DVisualization';
 import CartoonFigures from './components/CartoonFigures';
+import { useLoading } from './context/LoadingContext';
+import { FiGithub, FiTwitter, FiLinkedin } from 'react-icons/fi';
+import Footer from './components/Footer';
 
 const HomePage = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [activeFeature, setActiveFeature] = useState<number | null>(null);
   const { t } = useLanguage();
+  const { startLoading, stopLoading } = useLoading();
 
   const features = [
     {
@@ -104,6 +108,16 @@ const HomePage = () => {
       description: t('cell_description')
     }
   ];
+
+  useEffect(() => {
+    startLoading();
+    // Simulate loading time for data fetching
+    const timer = setTimeout(() => {
+      stopLoading();
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [startLoading, stopLoading]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
@@ -311,6 +325,8 @@ const HomePage = () => {
           </Link>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 };
